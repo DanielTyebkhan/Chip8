@@ -54,7 +54,7 @@ bool Chip8::ExecuteOpcode(Opcodes opcode) {
       const auto Y = (opcodeInt & 0x00F0) >> 4;
       const auto X = (opcodeInt & 0x0F00) >> 8;
       auto &VX = Register(X);
-      auto &VY = Register(Y);
+      const auto VY = Register(Y);
       _carry = static_cast<Byte>(bool(VX > 0xFF - VY));
       VX += VY;
       return true;
