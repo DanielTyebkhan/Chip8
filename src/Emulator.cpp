@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <iomanip>
-#include <sstream>
 #include <stdexcept>
 #include <tuple>
 
@@ -47,7 +45,7 @@ constexpr int Chip8::ExtractN(int instruction) {
   return instruction & 0x000F;
 }
 
-constexpr int Chip8::ExtractNN(int instruction) {
+constexpr int Chip8::ExtractKK(int instruction) {
   // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
   return instruction & 0x00FF;
 }
@@ -87,23 +85,23 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
   const auto Y = ExtractY(instruction);
   const auto X = ExtractX(instruction);
   const auto N = ExtractN(instruction);
-  const auto NN = ExtractNN(instruction);
+  const auto KK = ExtractKK(instruction);
   const auto NNN = ExtractNNN(instruction);
+  auto &VX = Register(X);
+  auto &VY = Register(Y);
 
   const auto firstNibble = static_cast<Opcodes>(instruction & 0xF000);
   if (static_cast<int>(firstNibble) == 0) {
     const auto lastNibble = static_cast<Opcodes>(instruction & 0x000F);
 
     switch (lastNibble) {
-    case Opcodes::e_ADD_VX_VY: {
-      auto &VX = Register(X);
-      const auto VY = Register(Y);
+    case Opcodes::ADD_VX_VY: {
       _carry = VX > 0xFF - VY;
       VX += VY;
       return true;
     }
 
-    case Opcodes::e_CLEAR_SCREEN:
+    case Opcodes::CLEAR_SCREEN:
       _screen->Clear();
       return true;
 
@@ -114,15 +112,28 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
   } else {
 
     switch (firstNibble) {
-
-    case Opcodes::e_SET_INDEX:
-      _index = NNN;
+    case Opcodes::LOAD_VX_KK:
+      VX = KK;
       return true;
 
-    case Opcodes::e_CALL:
+    case Opcodes::ADD_VX_KK:
+      VX += KK;
+      return true;
+
+    case Opcodes::JUMP_NNN:
+      _programCounter = NNN;
+      return false;
+
+    case Opcodes::CALL_NNN:
       StackPush(_programCounter);
       _programCounter = NNN;
       return false;
+
+    case Opcodes::SET_INDEX_NNN:
+      _index = NNN;
+      return true;
+
+    case Opcodes::DRAW:
 
     default:
       throw InstructionError(instruction);
@@ -143,7 +154,7 @@ void Chip8::Run() {
       if (shouldIncrementPc) {
         IncrementPC();
       }
-      _screen->Draw();
+      _screen->Refresh();
     }
   }
 }

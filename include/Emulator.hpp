@@ -13,10 +13,21 @@
 class Chip8 {
   using Instruction = int;
   enum class Opcodes {
-    e_CLEAR_SCREEN = 0x0000,
-    e_SET_INDEX = 0xA000,
-    e_CALL = 0x2000,
-    e_ADD_VX_VY = 0x0004,
+    // screen
+    CLEAR_SCREEN = 0x0000,
+    DRAW = 0xD000,
+
+    // Index
+    SET_INDEX_NNN = 0xA000,
+
+    // PC
+    CALL_NNN = 0x2000,
+    JUMP_NNN = 0x1000,
+
+    // Register
+    ADD_VX_VY = 0x0004,
+    LOAD_VX_KK = 0x6000,
+    ADD_VX_KK = 0x7000,
   };
 
 public:
@@ -34,7 +45,7 @@ private:
   static constexpr int ExtractX(Instruction instruction);
   static constexpr int ExtractY(Instruction instruction);
   static constexpr int ExtractN(Instruction instruction);
-  static constexpr int ExtractNN(Instruction instruction);
+  static constexpr int ExtractKK(Instruction instruction);
   static constexpr int ExtractNNN(Instruction instruction);
 
   void IncrementPC();
