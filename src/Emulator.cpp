@@ -3,6 +3,8 @@
 #include <cassert>
 #include <iomanip>
 #include <sstream>
+#include <stdexcept>
+#include <tuple>
 
 Chip8::Chip8() { Reset(); }
 
@@ -31,6 +33,21 @@ Chip8::Opcodes Chip8::GetNextInstruction() {
   return static_cast<Opcodes>(_memory[_programCounter] << BYTE |
                               _memory[_programCounter + 1]);
   // NOLINTEND(*-array-index, *-magic-numbers, *-signed-bitwise)
+}
+void Chip8::StackPush(unsigned short val) {
+  if (_stack.size() == std::tuple_size_v<decltype(_stack)::container_type>) {
+    throw std::runtime_error("stack overflow");
+  }
+  _stack.push(val);
+}
+
+unsigned short Chip8::StackPop() {
+  if (_stack.empty()) {
+    throw std::runtime_error("stack underflow");
+  }
+  const auto top = _stack.top();
+  _stack.pop();
+  return top;
 }
 
 void Chip8::IncrementPC() { _programCounter += 2; }
@@ -77,7 +94,7 @@ bool Chip8::ExecuteOpcode(Opcodes opcode) {
       return true;
 
     case Opcodes::e_CALL:
-      _stack.push(_programCounter);
+      StackPush(_programCounter);
       _programCounter = opcodeInt & 0x0FFF;
       return false;
 

@@ -44,6 +44,10 @@ private:
    */
   bool ExecuteOpcode(Opcodes opcode);
 
+  void StackPush(unsigned short val);
+
+  unsigned short StackPop();
+
   constexpr static std::size_t INITIAL_PROGRAM_COUNTER = 0x200;
   std::size_t _programCounter = INITIAL_PROGRAM_COUNTER;
 
