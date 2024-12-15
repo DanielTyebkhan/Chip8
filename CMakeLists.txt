@@ -13,3 +13,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_WARNING_AS_ERROR ON)
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_sources(
+    ${PROJECT_NAME} PRIVATE
+        src/Emulator.cpp 
+        src/InstructionError.cpp 
+        src/Screen.cpp
+        src/SoundTimer.cpp
+)
