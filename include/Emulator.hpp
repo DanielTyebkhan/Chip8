@@ -6,6 +6,7 @@
 #include <array>
 #include <chrono>
 #include <cstddef>
+#include <filesystem>
 #include <memory>
 #include <stack>
 #include <vector>
@@ -37,6 +38,8 @@ public:
 
   void LoadProgram(const std::vector<Byte> &program);
 
+  void LoadProgram(const std::filesystem::path &path);
+
   void Run();
 
 private:
@@ -52,7 +55,7 @@ private:
 
   void InitializeMemory();
 
-  std::unique_ptr<Screen> _screen;
+  std::unique_ptr<Screen> _screen = std::make_unique<Screen>();
 
   std::size_t _index = 0;
 
@@ -87,7 +90,7 @@ private:
   static constexpr std::chrono::steady_clock::duration TICK_PERIOD =
       std::chrono::nanoseconds{16666667};
 
-  bool _carry = 0;
+  bool _carry = false;
 
   constexpr static std::size_t NUM_REGISTERS = 15;
 
@@ -96,8 +99,8 @@ private:
   std::array<Byte, NUM_REGISTERS + NUM_CARRY> _registers{};
 
   constexpr static std::size_t STACK_SIZE = 16;
-  using StackUnderlying = std::array<unsigned short, STACK_SIZE>;
-  std::stack<unsigned short, StackUnderlying> _stack;
+  // using StackUnderlying = std::array<unsigned short, STACK_SIZE>;
+  std::stack<unsigned short> _stack;
 
   constexpr static std::size_t MEMORY_OFFSET_PROGRAM = 0x200;
   constexpr static std::size_t MEMORY_BYTES = 4096;
