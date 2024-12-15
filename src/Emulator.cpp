@@ -95,7 +95,6 @@ unsigned short Chip8::StackPop() {
 void Chip8::IncrementPC() { _programCounter += 2; }
 
 bool Chip8::ExecuteInstruction(Instruction instruction) {
-  std::cout << "Executing: " << std::hex << instruction << std::endl;
   // NOLINTBEGIN(*magic-numbers, *-array-index)
   const auto Y = ExtractY(instruction);
   const auto X = ExtractX(instruction);
@@ -168,7 +167,6 @@ void Chip8::Run() {
   while (true) {
     const auto now = std::chrono::steady_clock::now();
     if (now - _lastExecution >= TICK_PERIOD) {
-      std::cout << "in loop";
       _lastExecution = now;
       _soundTimer.Tick();
       --_delayTimer;
