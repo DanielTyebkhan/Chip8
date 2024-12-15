@@ -27,7 +27,6 @@ void Chip8::Reset() {
   _stack = {};
   _carry = false;
   _registers = {};
-  _programCounter = INITIAL_PROGRAM_COUNTER;
   _index = 0;
 }
 
@@ -40,48 +39,41 @@ void Chip8::LoadProgram(const std::filesystem::path &path) {
   char byte = 0;
   while (program.read(&byte, 1)) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-    _memory[MEMORY_OFFSET_PROGRAM + offset] = static_cast<unsigned char>(byte);
+    _memory[offset] = static_cast<unsigned char>(byte);
     ++offset;
   }
-  _programCounter = MEMORY_OFFSET_PROGRAM;
-}
-
-void Chip8::LoadProgram(const std::vector<Byte> &program) {
-  std::copy(program.begin(), program.end(),
-            _memory.begin() + MEMORY_OFFSET_PROGRAM);
-  _programCounter = MEMORY_OFFSET_PROGRAM;
 }
 
 constexpr int Chip8::ExtractX(int instruction) {
-  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  // NOLINTNEXTLINE(*-magic-numbers)
   return instruction & 0x0F00 >> 8;
 }
 constexpr int Chip8::ExtractY(int instruction) {
-  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  // NOLINTNEXTLINE(*-magic-numbers)
   return instruction & 0x00F0 >> 4;
 }
 
 constexpr int Chip8::ExtractN(int instruction) {
-  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  // NOLINTNEXTLINE(*-magic-numbers)
   return instruction & 0x000F;
 }
 
 constexpr int Chip8::ExtractKK(int instruction) {
-  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  // NOLINTNEXTLINE(*-magic-numbers)
   return instruction & 0x00FF;
 }
 
 constexpr int Chip8::ExtractNNN(int instruction) {
-  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  // NOLINTNEXTLINE(*-magic-numbers)
   return instruction & 0x0FFF;
 }
 
 int Chip8::FetchInstruction() {
-  // NOLINTBEGIN(*-array-index, *-magic-numbers, *-signed-bitwise)
+  // NOLINTBEGIN(*-array-index, *-magic-numbers)
   const auto byteOne = _memory[_programCounter];
   const auto byteTwo = _memory[_programCounter + 1];
   return byteOne << Constants::BITS_PER_BYTE | byteTwo;
-  // NOLINTEND(*-array-index, *-magic-numbers, *-signed-bitwise)
+  // NOLINTEND(*-array-index, *-magic-numbers)
 }
 
 void Chip8::StackPush(unsigned short val) {
@@ -104,7 +96,7 @@ void Chip8::IncrementPC() { _programCounter += 2; }
 
 bool Chip8::ExecuteInstruction(Instruction instruction) {
   std::cout << "Executing: " << std::hex << instruction << std::endl;
-  // NOLINTBEGIN(*magic-numbers, *-signed-bitwise, *-array-index)
+  // NOLINTBEGIN(*magic-numbers, *-array-index)
   const auto Y = ExtractY(instruction);
   const auto X = ExtractX(instruction);
   const auto N = ExtractN(instruction);
@@ -167,11 +159,12 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
       throw InstructionError(instruction);
     }
   }
-  // NOLINTEND(*magic-numbers, *-signed-bitwise, *-array-index)
+  // NOLINTEND(*magic-numbers, *-array-index)
   assert(false);
 }
 
 void Chip8::Run() {
+  _programCounter = MEMORY_OFFSET_PROGRAM;
   while (true) {
     const auto now = std::chrono::steady_clock::now();
     if (now - _lastExecution >= TICK_PERIOD) {
