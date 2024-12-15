@@ -1,10 +1,13 @@
 #include "Emulator.hpp"
+#include "Constants.hpp"
 #include "InstructionError.hpp"
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 #include <stdexcept>
-#include <tuple>
 
 Chip8::Chip8() { Reset(); }
 
@@ -17,18 +20,36 @@ void Chip8::InitializeMemory() {
 
 void Chip8::Reset() {
   _soundTimer = {};
-  _lastExecution = std::chrono::steady_clock::time_point::min();
+  _lastExecution =
+      std::chrono::steady_clock::time_point{std::chrono::seconds{0}};
   InitializeMemory();
+  _screen->Clear();
   _stack = {};
-  _carry = 0;
+  _carry = false;
   _registers = {};
   _programCounter = INITIAL_PROGRAM_COUNTER;
   _index = 0;
 }
 
+void Chip8::LoadProgram(const std::filesystem::path &path) {
+  std::ifstream program(path, std::ios::binary);
+  if (!program) {
+    throw std::runtime_error("Invalid program path: " + path.string());
+  }
+  unsigned int offset = MEMORY_OFFSET_PROGRAM;
+  char byte = 0;
+  while (program.read(&byte, 1)) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+    _memory[MEMORY_OFFSET_PROGRAM + offset] = static_cast<unsigned char>(byte);
+    ++offset;
+  }
+  _programCounter = MEMORY_OFFSET_PROGRAM;
+}
+
 void Chip8::LoadProgram(const std::vector<Byte> &program) {
   std::copy(program.begin(), program.end(),
             _memory.begin() + MEMORY_OFFSET_PROGRAM);
+  _programCounter = MEMORY_OFFSET_PROGRAM;
 }
 
 constexpr int Chip8::ExtractX(int instruction) {
@@ -56,14 +77,15 @@ constexpr int Chip8::ExtractNNN(int instruction) {
 }
 
 int Chip8::FetchInstruction() {
-  static constexpr int BYTE = 8;
   // NOLINTBEGIN(*-array-index, *-magic-numbers, *-signed-bitwise)
-  return _memory[_programCounter] << BYTE | _memory[_programCounter + 1];
+  const auto byteOne = _memory[_programCounter];
+  const auto byteTwo = _memory[_programCounter + 1];
+  return byteOne << Constants::BITS_PER_BYTE | byteTwo;
   // NOLINTEND(*-array-index, *-magic-numbers, *-signed-bitwise)
 }
 
 void Chip8::StackPush(unsigned short val) {
-  if (_stack.size() == std::tuple_size_v<decltype(_stack)::container_type>) {
+  if (_stack.size() >= STACK_SIZE) {
     throw std::runtime_error("stack overflow");
   }
   _stack.push(val);
@@ -81,6 +103,7 @@ unsigned short Chip8::StackPop() {
 void Chip8::IncrementPC() { _programCounter += 2; }
 
 bool Chip8::ExecuteInstruction(Instruction instruction) {
+  std::cout << "Executing: " << std::hex << instruction << std::endl;
   // NOLINTBEGIN(*magic-numbers, *-signed-bitwise, *-array-index)
   const auto Y = ExtractY(instruction);
   const auto X = ExtractX(instruction);
@@ -133,7 +156,12 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
       _index = NNN;
       return true;
 
-    case Opcodes::DRAW:
+    case Opcodes::DRAW: {
+      auto *const spriteStart = _memory.begin() + _index;
+      auto *const spriteEnd = spriteStart + N;
+      _screen->Draw(VX, VY, std::span(spriteStart, spriteEnd));
+      return true;
+    }
 
     default:
       throw InstructionError(instruction);
@@ -147,6 +175,7 @@ void Chip8::Run() {
   while (true) {
     const auto now = std::chrono::steady_clock::now();
     if (now - _lastExecution >= TICK_PERIOD) {
+      std::cout << "in loop";
       _lastExecution = now;
       _soundTimer.Tick();
       --_delayTimer;
@@ -154,7 +183,7 @@ void Chip8::Run() {
       if (shouldIncrementPc) {
         IncrementPC();
       }
-      _screen->Refresh();
+      _screen->Update();
     }
   }
 }
