@@ -1,2 +1,3 @@
+#include "Emulator.hpp"
 #include <iostream>
-int main() { std::cout << "test"; }
+int main() { Chip8 emulator{}; }
