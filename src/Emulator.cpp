@@ -1,6 +1,7 @@
 #include "Emulator.hpp"
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
@@ -10,10 +11,14 @@ Chip8::Chip8() { Reset(); }
 
 void Chip8::InitializeMemory() {
   _memory = {};
-  std::copy(FONT_SET.begin(), FONT_SET.end(), _memory.begin());
+
+  std::copy(FONT_SET.begin(), FONT_SET.end(),
+            _memory.begin() + MEMORY_OFFSET_FONT);
 }
 
 void Chip8::Reset() {
+  _soundTimer = {};
+  _lastExecution = std::chrono::steady_clock::time_point::min();
   InitializeMemory();
   _stack = {};
   _carry = 0;
@@ -106,6 +111,16 @@ bool Chip8::ExecuteOpcode(Opcodes opcode) {
   assert(false);
 }
 
-void Chip8::EmulateCycle() {}
-
-void Chip8::Run() noexcept {}
+void Chip8::Run() {
+  while (true) {
+    const auto now = std::chrono::steady_clock::now();
+    if (now - _lastExecution >= TICK_PERIOD) {
+      _lastExecution = now;
+      _soundTimer.Tick();
+      auto shouldIncrementPc = ExecuteOpcode(GetNextInstruction());
+      if (shouldIncrementPc) {
+        IncrementPC();
+      }
+    }
+  }
+}

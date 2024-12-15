@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Screen.hpp"
+#include "SoundTimer.hpp"
 #include "Types.hpp"
 #include <array>
+#include <chrono>
 #include <cstddef>
 #include <memory>
 #include <stack>
@@ -23,14 +25,12 @@ public:
 
   void LoadProgram(const std::vector<Byte> &program);
 
-  void Run() noexcept;
+  void Run();
 
 private:
   Opcodes GetNextInstruction();
 
   void IncrementPC();
-
-  void EmulateCycle();
 
   void InitializeMemory();
 
@@ -55,6 +55,17 @@ private:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
     return _registers[target];
   }
+
+  SoundTimer _soundTimer{};
+
+  std::chrono::steady_clock::time_point _lastExecution;
+
+  // by popular convention, but can be anywhere 0x0000 - 0x01FF
+  static constexpr std::size_t MEMORY_OFFSET_FONT = 0x0050;
+
+  /** 60hz */
+  static constexpr std::chrono::steady_clock::duration TICK_PERIOD =
+      std::chrono::nanoseconds{16666667};
 
   Byte _carry = 0;
 
