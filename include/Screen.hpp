@@ -27,6 +27,7 @@ public:
   constexpr static std::size_t HEIGHT = 32;
 
 private:
+  unsigned int _updateCount = 0;
   static void ClearStdout();
   Pixel &PixelAt(std::size_t x, std::size_t y);
   bool _shouldRefresh = true;

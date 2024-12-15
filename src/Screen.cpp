@@ -13,6 +13,7 @@ void Screen::ClearStdout() { std::cout << "\033[2J\033[1;1H"; }
 
 void Screen::Display() {
   ClearStdout();
+  std::cout << "Updates: " << _updateCount << std::endl;
   for (std::size_t y = 0; y < HEIGHT; ++y) {
     for (std::size_t x = 0; x < WIDTH; ++x) {
       std::cout << (PixelAt(x, y) ? '*' : ' ');
@@ -23,6 +24,7 @@ void Screen::Display() {
 
 void Screen::Update() {
   if (_shouldRefresh) {
+    ++_updateCount;
     Display();
     _shouldRefresh = false;
   }
