@@ -1,4 +1,5 @@
 #include "Emulator.hpp"
+#include "InstructionError.hpp"
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -32,13 +33,37 @@ void Chip8::LoadProgram(const std::vector<Byte> &program) {
             _memory.begin() + MEMORY_OFFSET_PROGRAM);
 }
 
-Chip8::Opcodes Chip8::GetNextInstruction() {
+constexpr int Chip8::ExtractX(int instruction) {
+  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  return instruction & 0x0F00 >> 8;
+}
+constexpr int Chip8::ExtractY(int instruction) {
+  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  return instruction & 0x00F0 >> 4;
+}
+
+constexpr int Chip8::ExtractN(int instruction) {
+  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  return instruction & 0x000F;
+}
+
+constexpr int Chip8::ExtractNN(int instruction) {
+  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  return instruction & 0x00FF;
+}
+
+constexpr int Chip8::ExtractNNN(int instruction) {
+  // NOLINTNEXTLINE(*-magic-numbers, *-signed-bitwise)
+  return instruction & 0x0FFF;
+}
+
+int Chip8::FetchInstruction() {
   static constexpr int BYTE = 8;
   // NOLINTBEGIN(*-array-index, *-magic-numbers, *-signed-bitwise)
-  return static_cast<Opcodes>(_memory[_programCounter] << BYTE |
-                              _memory[_programCounter + 1]);
+  return _memory[_programCounter] << BYTE | _memory[_programCounter + 1];
   // NOLINTEND(*-array-index, *-magic-numbers, *-signed-bitwise)
 }
+
 void Chip8::StackPush(unsigned short val) {
   if (_stack.size() == std::tuple_size_v<decltype(_stack)::container_type>) {
     throw std::runtime_error("stack overflow");
@@ -57,27 +82,23 @@ unsigned short Chip8::StackPop() {
 
 void Chip8::IncrementPC() { _programCounter += 2; }
 
-bool Chip8::ExecuteOpcode(Opcodes opcode) {
+bool Chip8::ExecuteInstruction(Instruction instruction) {
   // NOLINTBEGIN(*magic-numbers, *-signed-bitwise, *-array-index)
-  constexpr auto throwOpcodeError = [](Opcodes opcode) {
-    std::stringstream stream;
-    stream << "Invalid opcode: " << std::hex << std::uppercase
-           << std::setfill('0') << std::setw(8) << static_cast<int>(opcode);
-    throw std::runtime_error(stream.str());
-  };
+  const auto Y = ExtractY(instruction);
+  const auto X = ExtractX(instruction);
+  const auto N = ExtractN(instruction);
+  const auto NN = ExtractNN(instruction);
+  const auto NNN = ExtractNNN(instruction);
 
-  const auto opcodeInt = static_cast<int>(opcode);
-  const auto firstFourBits = static_cast<Opcodes>(opcodeInt & 0xF000);
-  if (static_cast<int>(firstFourBits) == 0) {
-    const auto lastFourBits = static_cast<Opcodes>(opcodeInt & 0x000F);
+  const auto firstNibble = static_cast<Opcodes>(instruction & 0xF000);
+  if (static_cast<int>(firstNibble) == 0) {
+    const auto lastNibble = static_cast<Opcodes>(instruction & 0x000F);
 
-    switch (lastFourBits) {
+    switch (lastNibble) {
     case Opcodes::e_ADD_VX_VY: {
-      const auto Y = (opcodeInt & 0x00F0) >> 4;
-      const auto X = (opcodeInt & 0x0F00) >> 8;
       auto &VX = Register(X);
       const auto VY = Register(Y);
-      _carry = static_cast<Byte>(bool(VX > 0xFF - VY));
+      _carry = VX > 0xFF - VY;
       VX += VY;
       return true;
     }
@@ -87,24 +108,24 @@ bool Chip8::ExecuteOpcode(Opcodes opcode) {
       return true;
 
     default:
-      throwOpcodeError(opcode);
+      throw InstructionError(instruction);
     }
 
   } else {
 
-    switch (firstFourBits) {
+    switch (firstNibble) {
 
     case Opcodes::e_SET_INDEX:
-      _index = opcodeInt & 0x0FFF;
+      _index = NNN;
       return true;
 
     case Opcodes::e_CALL:
       StackPush(_programCounter);
-      _programCounter = opcodeInt & 0x0FFF;
+      _programCounter = NNN;
       return false;
 
     default:
-      throwOpcodeError(opcode);
+      throw InstructionError(instruction);
     }
   }
   // NOLINTEND(*magic-numbers, *-signed-bitwise, *-array-index)
@@ -117,10 +138,12 @@ void Chip8::Run() {
     if (now - _lastExecution >= TICK_PERIOD) {
       _lastExecution = now;
       _soundTimer.Tick();
-      auto shouldIncrementPc = ExecuteOpcode(GetNextInstruction());
+      --_delayTimer;
+      auto shouldIncrementPc = ExecuteInstruction(FetchInstruction());
       if (shouldIncrementPc) {
         IncrementPC();
       }
+      _screen->Draw();
     }
   }
 }

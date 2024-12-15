@@ -11,6 +11,7 @@
 #include <vector>
 
 class Chip8 {
+  using Instruction = int;
   enum class Opcodes {
     e_CLEAR_SCREEN = 0x0000,
     e_SET_INDEX = 0xA000,
@@ -28,7 +29,13 @@ public:
   void Run();
 
 private:
-  Opcodes GetNextInstruction();
+  Instruction FetchInstruction();
+
+  static constexpr int ExtractX(Instruction instruction);
+  static constexpr int ExtractY(Instruction instruction);
+  static constexpr int ExtractN(Instruction instruction);
+  static constexpr int ExtractNN(Instruction instruction);
+  static constexpr int ExtractNNN(Instruction instruction);
 
   void IncrementPC();
 
@@ -42,7 +49,7 @@ private:
    * @brief execute an opcode
    * @return true if the program counter should be incremented
    */
-  bool ExecuteOpcode(Opcodes opcode);
+  bool ExecuteInstruction(Instruction instruction);
 
   void StackPush(unsigned short val);
 
@@ -56,6 +63,8 @@ private:
     return _registers[target];
   }
 
+  uint8_t _delayTimer = 0;
+
   SoundTimer _soundTimer{};
 
   std::chrono::steady_clock::time_point _lastExecution;
@@ -67,7 +76,7 @@ private:
   static constexpr std::chrono::steady_clock::duration TICK_PERIOD =
       std::chrono::nanoseconds{16666667};
 
-  Byte _carry = 0;
+  bool _carry = 0;
 
   constexpr static std::size_t NUM_REGISTERS = 15;
 
@@ -77,7 +86,7 @@ private:
 
   constexpr static std::size_t STACK_SIZE = 16;
   using StackUnderlying = std::array<unsigned short, STACK_SIZE>;
-  std::stack<unsigned short, StackUnderlying> _stack{};
+  std::stack<unsigned short, StackUnderlying> _stack;
 
   constexpr static std::size_t MEMORY_OFFSET_PROGRAM = 0x200;
   constexpr static std::size_t MEMORY_BYTES = 4096;
