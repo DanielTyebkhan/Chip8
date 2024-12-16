@@ -46,11 +46,11 @@ void Chip8::LoadProgram(const std::filesystem::path &path) {
 
 constexpr int Chip8::ExtractX(int instruction) {
   // NOLINTNEXTLINE(*-magic-numbers)
-  return instruction & 0x0F00 >> 8;
+  return (instruction & 0x0F00) >> 8;
 }
 constexpr int Chip8::ExtractY(int instruction) {
   // NOLINTNEXTLINE(*-magic-numbers)
-  return instruction & 0x00F0 >> 4;
+  return (instruction & 0x00F0) >> 4;
 }
 
 constexpr int Chip8::ExtractN(int instruction) {
