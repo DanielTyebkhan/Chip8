@@ -12,10 +12,12 @@ void Screen::Clear() {
 void Screen::ClearStdout() { std::cout << "\033[2J\033[1;1H"; }
 
 void Screen::Display() {
+  static constexpr auto BLOCK = "\u2588";
+  static constexpr auto BLANK = " ";
   ClearStdout();
   for (std::size_t y = 0; y < HEIGHT; ++y) {
     for (std::size_t x = 0; x < WIDTH; ++x) {
-      std::cout << (PixelAt(x, y) ? '*' : ' ');
+      std::cout << (PixelAt(x, y) ? BLOCK : BLANK);
     }
     std::cout << '\n';
   }
