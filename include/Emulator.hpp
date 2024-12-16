@@ -29,12 +29,25 @@ class Chip8 {
     ADD_VX_VY = 0x0004,
     LOAD_VX_KK = 0x6000,
     ADD_VX_KK = 0x7000,
-    LOAD_VX_VY = 0x8000,
+    EIGHT_OPS = 0x8000,
 
     // branch
     SKIP_VX_EQ_KK = 0x3000,
     SKIP_VX_NEQ_KK = 0x4000,
     SKIP_VX_EQ_VY = 0x5000,
+  };
+
+  // Last nibble for opcodes of the form 0x8xy*
+  enum class EightOps {
+    LOAD_VX_VY = 0x0000,
+    OR_VX_VY = 0x0001,
+    AND_VX_VY = 0x0002,
+    XOR_VX_VY = 0x0003,
+    ADD_VX_VY = 0x0004,
+    SUB_VX_VY = 0x0005,
+    SHIFT_RIGHT_VX = 0x0006,
+    SUBN_VX_VY = 0x0007,
+    SHIFT_LEFT_VX = 0x000E,
   };
 
 public:

@@ -105,8 +105,8 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
   auto *VY = Register(Y);
 
   const auto firstNibble = static_cast<Opcodes>(instruction & 0xF000);
+  const auto lastNibble = static_cast<Opcodes>(instruction & 0x000F);
   if (static_cast<int>(firstNibble) == 0) {
-    const auto lastNibble = static_cast<Opcodes>(instruction & 0x000F);
 
     switch (lastNibble) {
     case Opcodes::ADD_VX_VY: {
@@ -130,11 +130,53 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
   } else {
 
     switch (firstNibble) {
+
     case Opcodes::LOAD_VX_KK:
       *VX = KK;
       return true;
-    case Opcodes::LOAD_VX_VY:
-      *VX = *VY;
+
+    case Opcodes::EIGHT_OPS:
+      switch (static_cast<EightOps>(lastNibble)) {
+      case EightOps::LOAD_VX_VY:
+        *VX = *VY;
+        break;
+      case EightOps::OR_VX_VY:
+        *VX |= *VY;
+        break;
+      case EightOps::AND_VX_VY:
+        *VX &= *VY;
+        break;
+      case EightOps::XOR_VX_VY:
+        *VX ^= *VY;
+        break;
+      case EightOps::ADD_VX_VY: {
+        const auto sum = *VX + *VY;
+        *VX = sum & 0xFF;
+        _carry = sum > 0xFF;
+        break;
+      }
+      case EightOps::SUB_VX_VY: {
+        _carry = *VY > *VX;
+        const unsigned int x = *VX;
+        const unsigned int y = *VY;
+        *VX = static_cast<Byte>(x - y) & 0xFF;
+        break;
+      }
+      case EightOps::SHIFT_RIGHT_VX:
+        _carry = ((*VX & 1) != 0);
+        *VX >>= 1;
+        break;
+      case EightOps::SUBN_VX_VY: {
+        _carry = *VY > *VX;
+        const unsigned int x = *VX;
+        const unsigned int y = *VY;
+        *VX = static_cast<Byte>(y - x) & 0xFF;
+        break;
+      }
+      case EightOps::SHIFT_LEFT_VX:
+        _carry = ((*VX & 0x1000) != 0);
+        *VX = (*VX <<= 1) & 0x255;
+      }
       return true;
 
     case Opcodes::ADD_VX_KK:
