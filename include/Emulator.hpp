@@ -9,7 +9,6 @@
 #include <filesystem>
 #include <memory>
 #include <stack>
-#include <vector>
 
 class Chip8 {
   using Instruction = int;
@@ -24,11 +23,18 @@ class Chip8 {
     // PC
     CALL_NNN = 0x2000,
     JUMP_NNN = 0x1000,
+    RETURN = 0x000E,
 
     // Register
     ADD_VX_VY = 0x0004,
     LOAD_VX_KK = 0x6000,
     ADD_VX_KK = 0x7000,
+    LOAD_VX_VY = 0x8000,
+
+    // branch
+    SKIP_VX_EQ_KK = 0x3000,
+    SKIP_VX_NEQ_KK = 0x4000,
+    SKIP_VX_EQ_VY = 0x5000,
   };
 
 public:
@@ -69,9 +75,9 @@ private:
 
   std::size_t _programCounter = MEMORY_OFFSET_PROGRAM;
 
-  inline Byte &Register(std::size_t target) {
+  inline Byte *Register(std::size_t target) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-    return _registers[target];
+    return &_registers[target];
   }
 
   uint8_t _delayTimer = 0;

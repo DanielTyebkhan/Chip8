@@ -101,8 +101,8 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
   const auto N = ExtractN(instruction);
   const auto KK = ExtractKK(instruction);
   const auto NNN = ExtractNNN(instruction);
-  auto &VX = Register(X);
-  auto &VY = Register(Y);
+  auto *VX = Register(X);
+  auto *VY = Register(Y);
 
   const auto firstNibble = static_cast<Opcodes>(instruction & 0xF000);
   if (static_cast<int>(firstNibble) == 0) {
@@ -110,10 +110,14 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
 
     switch (lastNibble) {
     case Opcodes::ADD_VX_VY: {
-      _carry = VX > 0xFF - VY;
-      VX += VY;
+      _carry = *VX > 0xFF - *VY;
+      *VX += *VY;
       return true;
     }
+
+    case Opcodes::RETURN:
+      _programCounter = StackPop();
+      return false;
 
     case Opcodes::CLEAR_SCREEN:
       _screen->Clear();
@@ -127,11 +131,14 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
 
     switch (firstNibble) {
     case Opcodes::LOAD_VX_KK:
-      VX = KK;
+      *VX = KK;
+      return true;
+    case Opcodes::LOAD_VX_VY:
+      *VX = *VY;
       return true;
 
     case Opcodes::ADD_VX_KK:
-      VX += KK;
+      *VX += KK;
       return true;
 
     case Opcodes::JUMP_NNN:
@@ -147,10 +154,27 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
       _index = NNN;
       return true;
 
+    case Opcodes::SKIP_VX_EQ_KK:
+      if (*VX == KK) {
+        IncrementPC();
+      }
+      return true;
+
+    case Opcodes::SKIP_VX_NEQ_KK:
+      if (*VX != KK) {
+        IncrementPC();
+      }
+      return true;
+
+    case Opcodes::SKIP_VX_EQ_VY:
+      if (*VX == *VY) {
+        IncrementPC();
+      }
+
     case Opcodes::DRAW: {
       auto *const spriteStart = _memory.begin() + _index;
       auto *const spriteEnd = spriteStart + N;
-      _screen->Draw(VX, VY, std::span(spriteStart, spriteEnd));
+      _screen->Draw(*VX, *VY, std::span(spriteStart, spriteEnd));
       return true;
     }
 
