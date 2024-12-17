@@ -15,5 +15,5 @@ private:
   std::unique_ptr<Keyboard> _keyboard;
   std::unique_ptr<Screen> _screen;
   std::unique_ptr<Chip8> _chip;
-  std::unique_ptr<UI> _ui;
+  std::unique_ptr<SdlManager> _ui;
 };
