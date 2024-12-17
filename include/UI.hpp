@@ -4,6 +4,7 @@
 class UI {
 public:
   UI(Keyboard *keyboard, Screen const *screen);
+  void Run();
 
 private:
   Keyboard *_keyboard;

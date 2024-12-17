@@ -282,7 +282,6 @@ void Chip8::Run() {
       if (shouldIncrementPc) {
         IncrementPC();
       }
-      _screen->Display();
     }
   }
 }
