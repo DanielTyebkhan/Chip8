@@ -19,4 +19,6 @@ target_sources(
         src/InstructionError.cpp 
         src/Screen.cpp
         src/SoundTimer.cpp
+        src/Random.cpp
+        src/Keyboard.cpp
 )

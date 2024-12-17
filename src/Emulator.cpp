@@ -4,12 +4,11 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-
-Chip8::Chip8() { Reset(); }
 
 void Chip8::InitializeMemory() {
   _memory = {};
@@ -19,11 +18,12 @@ void Chip8::InitializeMemory() {
 }
 
 void Chip8::Reset() {
+  _keyboard.Reset();
   _soundTimer = {};
   _lastExecution =
       std::chrono::steady_clock::time_point{std::chrono::seconds{0}};
   InitializeMemory();
-  _screen->Clear();
+  _screen.Clear();
   _stack = {};
   _carry = false;
   _registers = {};
@@ -120,7 +120,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
       return false;
 
     case Opcodes::CLEAR_SCREEN:
-      _screen->Clear();
+      _screen.Clear();
       return true;
 
     default:
@@ -134,6 +134,28 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
     case Opcodes::LOAD_VX_KK:
       *VX = KK;
       return true;
+
+    case Opcodes::E_OPS:
+      switch (static_cast<EOps>(lastNibble)) {
+      case EOps::SKIP_VX_PRESSED:
+        if (_keyboard.IsKeyPressed(*VX)) {
+          IncrementPC();
+        }
+        return true;
+      case EOps::SKIP_VX_NOT_PRESSED:
+        if (!_keyboard.IsKeyPressed(*VX)) {
+          IncrementPC();
+        }
+        return true;
+      }
+
+    case Opcodes::F_OPS:
+      switch (static_cast<FOps>(lastNibble)) {
+      case FOps::LOAD_DELAY_VX:
+        *VX = _delayTimer;
+        return true;
+      case FOps::WAIT_KEY_VX:
+      }
 
     case Opcodes::EIGHT_OPS:
       switch (static_cast<EightOps>(lastNibble)) {
@@ -187,6 +209,10 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
       _programCounter = NNN;
       return false;
 
+    case Opcodes::JUMP_V0_NNN:
+      _programCounter = NNN + *Register(0);
+      return false;
+
     case Opcodes::CALL_NNN:
       StackPush(_programCounter);
       _programCounter = NNN;
@@ -212,11 +238,22 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
       if (*VX == *VY) {
         IncrementPC();
       }
+      return true;
+
+    case Opcodes::SKIP_VX_NEQ_VY:
+      if (*VX != *VY) {
+        IncrementPC();
+      }
+      return true;
+
+    case Opcodes::RND_VX_KK:
+      *VX = _rng.Generate() & NNN;
+      return true;
 
     case Opcodes::DRAW: {
       auto *const spriteStart = _memory.begin() + _index;
       auto *const spriteEnd = spriteStart + N;
-      _screen->Draw(*VX, *VY, std::span(spriteStart, spriteEnd));
+      _screen.Draw(*VX, *VY, std::span(spriteStart, spriteEnd));
       return true;
     }
 
@@ -240,7 +277,7 @@ void Chip8::Run() {
       if (shouldIncrementPc) {
         IncrementPC();
       }
-      _screen->Update();
+      _screen.Update();
     }
   }
 }
