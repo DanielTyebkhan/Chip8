@@ -3,10 +3,9 @@
 #include "Screen.hpp"
 class UI {
 public:
-  UI(Keyboard *keyboard, Screen const *screen);
+  UI(Keyboard *keyboard);
   void Run();
 
 private:
   Keyboard *_keyboard;
-  Screen const *_screen;
 };
