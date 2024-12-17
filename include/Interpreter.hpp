@@ -71,7 +71,7 @@ class Chip8 {
   };
 
 public:
-  explicit Chip8(Keyboard const *keyboard, Screen *screen);
+  explicit Chip8(Keyboard *keyboard, Screen *screen);
 
   void Cancel();
 
@@ -111,7 +111,7 @@ private:
     return &_registers[target];
   }
 
-  Keyboard const *_keyboard;
+  Keyboard *_keyboard;
 
   RandomNumberGenerator _rng{0, Constants::MAX_BYTE,
                              static_cast<int>(time(nullptr))};

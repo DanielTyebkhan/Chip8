@@ -21,7 +21,7 @@ void Keyboard::SetKeyPressed(std::size_t key, bool isPressed) {
 }
 // NOLINTEND(*-array-index)
 
-std::future<std::size_t> Keyboard::GetNextKeyPress() const {
+std::future<std::size_t> Keyboard::GetNextKeyPress() {
   _keyPressRequests.emplace_back();
   return _keyPressRequests.back().get_future();
 }
