@@ -21,4 +21,8 @@ target_sources(
         src/SoundTimer.cpp
         src/Random.cpp
         src/Keyboard.cpp
+        src/Interpreter.cpp
 )
+
+find_package(SDL2 REQUIRED)
+target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES})
