@@ -24,19 +24,11 @@ void Screen::Display() {
   std::cout << std::flush;
 }
 
-void Screen::Update() {
-  if (_shouldRefresh) {
-    ++_updateCount;
-    Display();
-    _shouldRefresh = false;
-  }
-}
-
 bool Screen::Draw(Byte x, Byte y, const std::span<Byte> sprite) {
   constexpr static unsigned int MSB = 1 << (Constants::BITS_PER_BYTE - 1);
   const auto xBase = x % WIDTH;
   const auto yBase = y % HEIGHT;
-  _shouldRefresh = false;
+  bool changed = false;
   bool collision = false;
   for (std::size_t yOffset = 0; yOffset < sprite.size(); ++yOffset) {
     const auto yCoord = yBase + yOffset;
@@ -54,13 +46,26 @@ bool Screen::Draw(Byte x, Byte y, const std::span<Byte> sprite) {
       const auto oldPixel = pixel;
       pixel ^= static_cast<int>(spriteBitSet);
       if (oldPixel != pixel) {
-        _shouldRefresh = true;
+        changed = true;
         const bool pixelTurnedOff = !pixel;
         collision = collision || pixelTurnedOff;
       }
     }
   }
+  if (changed) {
+    NotifyUpdate();
+  }
   return collision;
+}
+
+void Screen::RegisterUpdateCallback(UpdateCallback callback) {
+  _updateCallbacks.emplace_back(std::move(callback));
+}
+
+void Screen::NotifyUpdate() {
+  for (auto &callback : _updateCallbacks) {
+    callback(_pixels);
+  }
 }
 
 Screen::Pixel &Screen::PixelAt(std::size_t x, std::size_t y) {

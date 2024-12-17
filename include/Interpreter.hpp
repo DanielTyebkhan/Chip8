@@ -72,6 +72,9 @@ class Chip8 {
 
 public:
   explicit Chip8(Keyboard const *keyboard, Screen *screen);
+
+  void Cancel();
+
   void Reset();
 
   void LoadProgram(const std::filesystem::path &path);
@@ -155,4 +158,6 @@ private:
       0xF0, 0x80, 0x80, 0x80, 0xF0, 0xE0, 0x90, 0x90, 0x90, 0xE0, 0xF0, 0x80,
       0xF0, 0x80, 0xF0, 0xF0, 0x80, 0xF0, 0x80, 0x80,
   }));
+
+  std::atomic<bool> _cancelled = false;
 };

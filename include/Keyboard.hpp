@@ -4,7 +4,7 @@
 #include <atomic>
 #include <cstddef>
 #include <future>
-#include <optional>
+#include <vector>
 
 /**
  * @brief thread-safe keyboard implementation
@@ -18,6 +18,6 @@ public:
 private:
   static constexpr std::size_t KEYBOARD_SIZE = 16;
   std::array<std::atomic<bool>, KEYBOARD_SIZE> _keyboard{};
-  mutable std::optional<std::promise<std::size_t>> _keyPressEvent;
+  mutable std::vector<std::promise<std::size_t>> _keyPressRequests;
   std::atomic<bool> _cancelled = false;
 };

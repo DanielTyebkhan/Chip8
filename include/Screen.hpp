@@ -4,9 +4,12 @@
 #include "Types.hpp"
 #include <array>
 #include <cstddef>
+#include <functional>
 #include <span>
+#include <vector>
 class Screen {
   using Pixel = bool;
+  using UpdateCallback = std::function<void(const std::span<Pixel>)>;
 
 public:
   void Clear();
@@ -23,15 +26,22 @@ public:
 
   void Display();
 
+  void RegisterUpdateCallback(UpdateCallback callback);
+
   constexpr static std::size_t WIDTH = 64;
+
   constexpr static std::size_t HEIGHT = 32;
 
 private:
-  unsigned int _updateCount = 0;
   static void ClearStdout();
+
   Pixel &PixelAt(std::size_t x, std::size_t y);
-  bool _shouldRefresh = true;
+
+  void NotifyUpdate();
+
   std::array<Pixel, WIDTH * HEIGHT> _pixels = {};
+
+  std::vector<UpdateCallback> _updateCallbacks;
 };
 
 #endif

@@ -2,6 +2,7 @@
 
 #include "Interpreter.hpp"
 #include "Keyboard.hpp"
+#include "UI.hpp"
 #include <filesystem>
 #include <memory>
 class Emulator {
@@ -14,4 +15,5 @@ private:
   std::unique_ptr<Keyboard> _keyboard;
   std::unique_ptr<Screen> _screen;
   std::unique_ptr<Chip8> _chip;
+  std::unique_ptr<UI> _display;
 };

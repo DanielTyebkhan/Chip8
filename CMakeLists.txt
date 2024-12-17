@@ -22,6 +22,7 @@ target_sources(
         src/Random.cpp
         src/Keyboard.cpp
         src/Interpreter.cpp
+        src/UI.cpp
 )
 
 find_package(SDL2 REQUIRED)

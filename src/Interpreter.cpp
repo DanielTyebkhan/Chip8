@@ -272,7 +272,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
 
 void Chip8::Run() {
   _programCounter = MEMORY_OFFSET_PROGRAM;
-  while (true) {
+  while (!_cancelled) {
     const auto now = std::chrono::steady_clock::now();
     if (now - _lastExecution >= TICK_PERIOD) {
       _lastExecution = now;
@@ -282,7 +282,9 @@ void Chip8::Run() {
       if (shouldIncrementPc) {
         IncrementPC();
       }
-      _screen->Update();
+      _screen->Display();
     }
   }
 }
+
+void Chip8::Cancel() { _cancelled = true; }

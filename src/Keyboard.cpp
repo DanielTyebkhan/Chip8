@@ -11,15 +11,17 @@ bool Keyboard::IsKeyPressed(std::size_t key) const {
 
 void Keyboard::SetKeyPressed(std::size_t key, bool isPressed) {
   assert(key < _keyboard.size());
-  if (_keyPressEvent.has_value() && isPressed) {
-    _keyPressEvent->set_value(key);
-    _keyPressEvent.reset();
+  if (isPressed) {
+    for (auto &request : _keyPressRequests) {
+      request.set_value(key);
+    }
+    _keyPressRequests.clear();
   }
   _keyboard[key] = isPressed;
 }
 // NOLINTEND(*-array-index)
 
 std::future<std::size_t> Keyboard::GetNextKeyPress() const {
-  _keyPressEvent = std::promise<std::size_t>();
-  return _keyPressEvent->get_future();
+  _keyPressRequests.emplace_back();
+  return _keyPressRequests.back().get_future();
 }
