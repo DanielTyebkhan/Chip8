@@ -32,7 +32,6 @@ class Chip8 {
     ADD_VX_VY = 0x0004,
     LOAD_VX_KK = 0x6000,
     ADD_VX_KK = 0x7000,
-    EIGHT_OPS = 0x8000,
     RND_VX_KK = 0xC00,
 
     // branch
@@ -45,6 +44,7 @@ class Chip8 {
 
     E_OPS = 0xE000,
     F_OPS = 0xF000,
+    EIGHT_OPS = 0x8000,
   };
 
   // Last nibble for opcodes of the form 0x8xy*
@@ -62,7 +62,14 @@ class Chip8 {
 
   enum class FOps {
     LOAD_DELAY_VX = 0x0007,
-    WAIT_KEY_VX = 0x0005,
+    WAIT_KEY_VX = 0x000A,
+    SET_DELAY_VX = 0x0015,
+    SET_SOUND_VX = 0x0018,
+    ADD_VX_TO_I = 0x001E,
+    SET_I_VX_SPRITE = 0x0029,
+    SET_MEM_I_DECIMAL_VX = 0x0033,
+    STORE_MEM_I_V0_TO_VX = 0x0055,
+    LOAD_V0_TO_VX_FROM_MEM_AT_I = 0x0065,
   };
 
   enum class EOps {

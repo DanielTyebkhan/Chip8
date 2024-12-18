@@ -2,6 +2,7 @@
 #include "Constants.hpp"
 #include "InstructionError.hpp"
 #include "Screen.hpp"
+#include "Types.hpp"
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -152,58 +153,98 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         }
         return true;
       }
+      throw InstructionError(instruction);
 
     case Opcodes::F_OPS:
-      switch (static_cast<FOps>(lastNibble)) {
+      switch (static_cast<FOps>(instruction & 0x00FF)) {
       case FOps::LOAD_DELAY_VX:
         *VX = _delayTimer;
         return true;
-      case FOps::WAIT_KEY_VX:
+      case FOps::WAIT_KEY_VX: {
+        auto keyPress = _keyboard->GetNextKeyPress();
+        keyPress.wait();
+        *VX = static_cast<Byte>(keyPress.get());
+        return true;
       }
+      case FOps::SET_DELAY_VX:
+        _delayTimer = *VX;
+        return true;
+      case FOps::SET_SOUND_VX:
+        _soundTimer.SetTimer(*VX);
+        return true;
+      case FOps::ADD_VX_TO_I:
+        _index += *VX;
+        return true;
+      case FOps::SET_I_VX_SPRITE:
+        _index = MEMORY_OFFSET_FONT + *VX;
+        return true;
+      case FOps::SET_MEM_I_DECIMAL_VX: {
+        const auto tc = *VX;
+        const Byte hundreds = std::floor(tc / 100);
+        const Byte tens = std::floor((tc % 100) / 10);
+        const Byte ones = tc % 10;
+        _memory[_index] = hundreds / 100;
+        _memory[_index + 1] = tens / 10;
+        _memory[_index + 2] = ones;
+        return true;
+      }
+      case FOps::STORE_MEM_I_V0_TO_VX: {
+        std::copy(_registers.begin(), _registers.begin() + X + 1,
+                  _memory.begin() + _index);
+        return true;
+      }
+      case FOps::LOAD_V0_TO_VX_FROM_MEM_AT_I: {
+        std::copy(_memory.begin() + _index, _memory.begin() + _index + X,
+                  _registers.begin());
+        return true;
+      }
+      }
+      throw InstructionError(instruction);
 
     case Opcodes::EIGHT_OPS:
       switch (static_cast<EightOps>(lastNibble)) {
       case EightOps::LOAD_VX_VY:
         *VX = *VY;
-        break;
+        return true;
       case EightOps::OR_VX_VY:
         *VX |= *VY;
-        break;
+        return true;
       case EightOps::AND_VX_VY:
         *VX &= *VY;
-        break;
+        return true;
       case EightOps::XOR_VX_VY:
         *VX ^= *VY;
-        break;
+        return true;
       case EightOps::ADD_VX_VY: {
         const auto sum = *VX + *VY;
         *VX = sum & 0xFF;
         _carry = sum > 0xFF;
-        break;
+        return true;
       }
       case EightOps::SUB_VX_VY: {
         _carry = *VY > *VX;
         const unsigned int x = *VX;
         const unsigned int y = *VY;
         *VX = static_cast<Byte>(x - y) & 0xFF;
-        break;
+        return true;
       }
       case EightOps::SHIFT_RIGHT_VX:
         _carry = ((*VX & 1) != 0);
         *VX >>= 1;
-        break;
+        return true;
       case EightOps::SUBN_VX_VY: {
         _carry = *VY > *VX;
         const unsigned int x = *VX;
         const unsigned int y = *VY;
         *VX = static_cast<Byte>(y - x) & 0xFF;
-        break;
+        return true;
       }
       case EightOps::SHIFT_LEFT_VX:
         _carry = ((*VX & 0x1000) != 0);
         *VX = (*VX <<= 1) & 0x255;
+        return true;
       }
-      return true;
+      throw InstructionError(instruction);
 
     case Opcodes::ADD_VX_KK:
       *VX += KK;

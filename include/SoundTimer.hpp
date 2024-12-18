@@ -3,6 +3,7 @@
 class SoundTimer {
 public:
   void Tick();
+  void SetTimer(int val);
 
 private:
   void StartSound();
