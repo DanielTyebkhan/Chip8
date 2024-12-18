@@ -1,4 +1,6 @@
 #include "UI.hpp"
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
@@ -59,6 +61,17 @@ void SdlManager::QueueFrame(Frame frame) {
   _frameBuffer.Enqueue(std::move(frame));
 }
 
+void SdlManager::SetKeyStatus(SDL_Keycode key, bool status) {
+  static constexpr auto keys = std::array{
+      SDLK_x, SDLK_1, SDLK_2, SDLK_3, SDLK_q, SDLK_w, SDLK_e, SDLK_a,
+      SDLK_s, SDLK_d, SDLK_z, SDLK_c, SDLK_4, SDLK_r, SDLK_f, SDLK_v,
+  };
+  const auto *const keyIter = std::find(keys.begin(), keys.end(), key);
+  if (keyIter != keys.end()) {
+    _keyboard->SetKeyPressed(keyIter - keys.begin(), status);
+  }
+}
+
 void SdlManager::Run() {
   SDL_Event e;
   bool quit = false;
@@ -69,7 +82,10 @@ void SdlManager::Run() {
         quit = true;
         break;
       case SDL_KEYDOWN:
-        std::cout << e.key.keysym.sym - 'a' << std::endl;
+        SetKeyStatus(e.key.keysym.sym, true);
+        break;
+      case SDL_KEYUP:
+        SetKeyStatus(e.key.keysym.sym, false);
         break;
       }
     }

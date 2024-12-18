@@ -2,6 +2,7 @@
 #include "Keyboard.hpp"
 #include "SafeQueue.hpp"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_surface.h>
@@ -34,6 +35,8 @@ private:
   void RenderFrame(const Frame &toRender);
 
   void TryRenderFrame();
+
+  void SetKeyStatus(SDL_Keycode key, bool status);
 
   SDL_Window *_window = nullptr;
   SDL_Surface *_surface = nullptr;
