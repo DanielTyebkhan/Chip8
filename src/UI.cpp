@@ -45,8 +45,8 @@ void SdlManager::TryRenderFrame() {
 }
 
 void SdlManager::RenderFrame(const Frame &toRender) {
-  constexpr static Uint32 PIXEL_ON = 0xFFFFFFFF;
-  constexpr static Uint32 PIXEL_OFF = 0x000000FF;
+  constexpr static Uint32 PIXEL_ON = 0xFFF;
+  constexpr static Uint32 PIXEL_OFF = 0x000;
   std::transform(toRender.begin(), toRender.end(), _pixels.begin(),
                  [](bool on) { return on ? PIXEL_ON : PIXEL_OFF; });
   SDL_UpdateTexture(_texture, nullptr, _pixels.data(),
