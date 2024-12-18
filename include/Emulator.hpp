@@ -7,8 +7,7 @@
 #include <memory>
 class Emulator {
 public:
-  Emulator();
-  void LoadProgram(const std::filesystem::path &path);
+  explicit Emulator(const std::filesystem::path &programPath);
   void Run();
 
 private:

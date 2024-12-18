@@ -11,7 +11,7 @@
 #include <iostream>
 #include <stdexcept>
 
-Chip8::Chip8(Keyboard const *keyboard, Screen *screen)
+Chip8::Chip8(Keyboard *keyboard, Screen *screen)
     : _keyboard(keyboard), _screen(screen) {}
 
 void Chip8::InitializeMemory() {
