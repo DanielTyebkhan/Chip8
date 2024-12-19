@@ -180,8 +180,8 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         return true;
       case FOps::SET_MEM_I_DECIMAL_VX: {
         const auto tc = *VX;
-        const Byte hundreds = std::floor(tc / 100);
-        const Byte tens = std::floor((tc % 100) / 10);
+        const Byte hundreds = tc / 100;
+        const Byte tens = (tc % 100) / 10;
         const Byte ones = tc % 10;
         _memory[_index] = hundreds;
         _memory[_index + 1] = tens;
