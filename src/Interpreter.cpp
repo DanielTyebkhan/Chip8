@@ -240,8 +240,8 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         return true;
       }
       case EightOps::SHIFT_LEFT_VX:
-        _carry = ((*VX & 0x1000) != 0);
-        *VX = (*VX <<= 1) & 0x255;
+        _carry = ((*VX & 0b10000000) != 0);
+        *VX = (*VX << 1) & 0xFF;
         return true;
       }
       throw InstructionError(instruction);
