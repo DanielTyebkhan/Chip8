@@ -122,7 +122,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
 
     case Opcodes::RETURN:
       _programCounter = StackPop();
-      return false;
+      return true;
 
     case Opcodes::CLEAR_SCREEN:
       _screen->Clear();
