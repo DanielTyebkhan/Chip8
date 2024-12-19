@@ -247,7 +247,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
       throw InstructionError(instruction);
 
     case Opcodes::ADD_VX_KK:
-      *VX += KK;
+      *VX = (*VX + KK) & 0xFF;
       return true;
 
     case Opcodes::JUMP_NNN:
