@@ -183,8 +183,8 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         const Byte hundreds = std::floor(tc / 100);
         const Byte tens = std::floor((tc % 100) / 10);
         const Byte ones = tc % 10;
-        _memory[_index] = hundreds / 100;
-        _memory[_index + 1] = tens / 10;
+        _memory[_index] = hundreds;
+        _memory[_index + 1] = tens;
         _memory[_index + 2] = ones;
         return true;
       }
