@@ -194,7 +194,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         return true;
       }
       case FOps::LOAD_V0_TO_VX_FROM_MEM_AT_I: {
-        std::copy(_memory.begin() + _index, _memory.begin() + _index + X,
+        std::copy(_memory.begin() + _index, _memory.begin() + _index + X + 1,
                   _registers.begin());
         return true;
       }
