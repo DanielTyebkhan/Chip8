@@ -225,9 +225,9 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         return true;
       }
       case EightOps::SUB_VX_VY: {
-        const unsigned int x = *VX;
-        const unsigned int y = *VY;
-        *VX = static_cast<Byte>(x - y) & 0xFF;
+        const Byte x = *VX;
+        const Byte y = *VY;
+        *VX = (x - y) & 0xFF;
         setCarry(y <= x);
         return true;
       }
@@ -241,7 +241,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         const unsigned int x = *VX;
         const unsigned int y = *VY;
         *VX = static_cast<Byte>(y - x) & 0xFF;
-        setCarry(y > x);
+        setCarry(y >= x);
         return true;
       }
       case EightOps::SHIFT_LEFT_VX: {
