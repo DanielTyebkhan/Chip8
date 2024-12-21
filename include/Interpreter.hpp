@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <stack>
+#include <stdexcept>
 
 class Chip8 {
   using Instruction = int;
@@ -116,7 +117,7 @@ private:
 
   inline Byte *Register(std::size_t target) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-    return &_registers[target];
+    return &_registers.at(target);
   }
 
   Keyboard *_keyboard;
@@ -140,8 +141,6 @@ private:
   /** 60hz */
   static constexpr std::chrono::steady_clock::duration CPU_TICK_PERIOD =
       std::chrono::nanoseconds{2000000};
-
-  bool _carry = false;
 
   constexpr static std::size_t NUM_REGISTERS = 15;
 

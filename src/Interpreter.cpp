@@ -29,7 +29,6 @@ void Chip8::Reset() {
   InitializeMemory();
   _screen->Clear();
   _stack = {};
-  _carry = false;
   _registers = {};
   _index = 0;
 }
@@ -108,6 +107,10 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
   const auto NNN = ExtractNNN(instruction);
   auto *VX = Register(X);
   auto *VY = Register(Y);
+  auto *carry = Register(0xF);
+  const auto setCarry = [carry](bool value) {
+    *carry = static_cast<int>(value);
+  };
 
   const auto firstNibble = static_cast<Opcodes>(instruction & 0xF000);
   const auto lastNibble = static_cast<Opcodes>(instruction & 0x000F);
@@ -115,7 +118,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
 
     switch (lastNibble) {
     case Opcodes::ADD_VX_VY: {
-      _carry = *VX > 0xFF - *VY;
+      setCarry(*VX > 0xFF - *VY);
       *VX += *VY;
       return true;
     }
@@ -218,29 +221,29 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
       case EightOps::ADD_VX_VY: {
         const auto sum = *VX + *VY;
         *VX = sum & 0xFF;
-        _carry = sum > 0xFF;
+        setCarry(sum > 0xFF);
         return true;
       }
       case EightOps::SUB_VX_VY: {
-        _carry = *VY > *VX;
+        setCarry(*VY > *VX);
         const unsigned int x = *VX;
         const unsigned int y = *VY;
         *VX = static_cast<Byte>(x - y) & 0xFF;
         return true;
       }
       case EightOps::SHIFT_RIGHT_VX:
-        _carry = ((*VX & 1) != 0);
+        setCarry(((*VX & 1) != 0));
         *VX >>= 1;
         return true;
       case EightOps::SUBN_VX_VY: {
-        _carry = *VY > *VX;
+        setCarry(*VY > *VX);
         const unsigned int x = *VX;
         const unsigned int y = *VY;
         *VX = static_cast<Byte>(y - x) & 0xFF;
         return true;
       }
       case EightOps::SHIFT_LEFT_VX:
-        _carry = ((*VX & 0b10000000) != 0);
+        setCarry((*VX & 0b10000000) != 0);
         *VX = (*VX << 1) & 0xFF;
         return true;
       }
@@ -332,7 +335,6 @@ void Chip8::Run() {
       // if (diff > 0.4) {
       //   std::cout << "long" << std::endl;
       // }
-      lastRender = std::chrono::steady_clock::now();
       if (shouldIncrementPc) {
         IncrementPC();
       }
