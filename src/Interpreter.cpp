@@ -311,9 +311,6 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
   assert(false);
 }
 
-std::chrono::steady_clock::time_point lastRender =
-    std::chrono::steady_clock::now();
-
 void Chip8::Run() {
   _programCounter = MEMORY_OFFSET_PROGRAM;
   while (!_cancelled) {
