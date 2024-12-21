@@ -225,27 +225,31 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         return true;
       }
       case EightOps::SUB_VX_VY: {
-        setCarry(*VY <= *VX);
         const unsigned int x = *VX;
         const unsigned int y = *VY;
         *VX = static_cast<Byte>(x - y) & 0xFF;
+        setCarry(y <= x);
         return true;
       }
-      case EightOps::SHIFT_RIGHT_VX:
-        setCarry(((*VX & 1) != 0));
+      case EightOps::SHIFT_RIGHT_VX: {
+        const auto x = *VX;
         *VX >>= 1;
+        setCarry(((x & 1) != 0));
         return true;
+      }
       case EightOps::SUBN_VX_VY: {
-        setCarry(*VY > *VX);
         const unsigned int x = *VX;
         const unsigned int y = *VY;
         *VX = static_cast<Byte>(y - x) & 0xFF;
+        setCarry(y > x);
         return true;
       }
-      case EightOps::SHIFT_LEFT_VX:
-        setCarry((*VX & 0b10000000) != 0);
-        *VX = (*VX << 1) & 0xFF;
+      case EightOps::SHIFT_LEFT_VX: {
+        const auto x = *VX;
+        *VX = (x << 1) & 0xFF;
+        setCarry((x & 0b10000000) != 0);
         return true;
+      }
       }
       throw InstructionError(instruction);
 
