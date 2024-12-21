@@ -32,7 +32,7 @@ bool Screen::Draw(Byte x, Byte y, const std::span<Byte> sprite) {
   bool collision = false;
   for (std::size_t yOffset = 0; yOffset < sprite.size(); ++yOffset) {
     const auto yCoord = yBase + yOffset;
-    if (yCoord > HEIGHT) {
+    if (yCoord >= HEIGHT) {
       break;
     }
     const auto spriteRow = sprite[yOffset];
@@ -70,5 +70,5 @@ void Screen::NotifyUpdate() {
 
 Screen::Pixel &Screen::PixelAt(std::size_t x, std::size_t y) {
   // NOLINTNEXTLINE
-  return _pixels[WIDTH * y + x];
+  return _pixels.at(WIDTH * y + x);
 }
