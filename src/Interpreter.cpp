@@ -115,7 +115,6 @@ void Chip8::ExecuteInstruction(Instruction instruction) {
   const auto firstNibble = static_cast<Opcodes>(instruction & 0xF000);
   const auto lastNibble = static_cast<Opcodes>(instruction & 0x000F);
   if (static_cast<int>(firstNibble) == 0) {
-
     switch (lastNibble) {
     case Opcodes::ADD_VX_VY: {
       setCarry(*VX > 0xFF - *VY);
@@ -134,9 +133,7 @@ void Chip8::ExecuteInstruction(Instruction instruction) {
     default:
       throw InstructionError(instruction);
     }
-
   } else {
-
     switch (firstNibble) {
 
     case Opcodes::LOAD_VX_KK:
@@ -315,7 +312,6 @@ void Chip8::ExecuteInstruction(Instruction instruction) {
       _screen->Draw(*VX, *VY, std::span(spriteStart, spriteEnd));
       break;
     }
-
     default:
       throw InstructionError(instruction);
     }
