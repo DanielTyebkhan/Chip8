@@ -225,7 +225,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         return true;
       }
       case EightOps::SUB_VX_VY: {
-        setCarry(*VY > *VX);
+        setCarry(*VY <= *VX);
         const unsigned int x = *VX;
         const unsigned int y = *VY;
         *VX = static_cast<Byte>(x - y) & 0xFF;
