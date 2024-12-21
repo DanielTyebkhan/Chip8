@@ -23,6 +23,7 @@ target_sources(
         src/Keyboard.cpp
         src/Interpreter.cpp
         src/UI.cpp
+        src/DelayTimer.cpp
 )
 
 find_package(SDL2 REQUIRED)

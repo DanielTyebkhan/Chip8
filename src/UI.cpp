@@ -5,6 +5,7 @@
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <iostream>
 #include <stdexcept>
@@ -44,7 +45,17 @@ void SdlManager::TryRenderFrame() {
   RenderFrame(*frame);
 }
 
+// std::chrono::steady_clock::time_point lastRender =
+//     std::chrono::steady_clock::now();
 void SdlManager::RenderFrame(const Frame &toRender) {
+  // const auto diff =
+  //     (std::chrono::steady_clock::now() - lastRender).count() / 1000000000.0;
+  // std::cout << diff << std::endl;
+  // if (diff > 0.4) {
+  //   std::cout << "long" << std::endl;
+  // }
+  // lastRender = std::chrono::steady_clock::now();
+
   constexpr static Uint32 PIXEL_ON = 0xFFF;
   constexpr static Uint32 PIXEL_OFF = 0x000;
   std::transform(toRender.begin(), toRender.end(), _pixels.begin(),

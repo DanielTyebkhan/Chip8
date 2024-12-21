@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Constants.hpp"
+#include "DelayTimer.hpp"
 #include "Keyboard.hpp"
 #include "Random.hpp"
 #include "Screen.hpp"
@@ -127,7 +128,7 @@ private:
 
   std::size_t _index = 0;
 
-  uint8_t _delayTimer = 0;
+  DelayTimer _delayTimer;
 
   SoundTimer _soundTimer{};
 
@@ -137,8 +138,8 @@ private:
   static constexpr std::size_t MEMORY_OFFSET_FONT = 0x0050;
 
   /** 60hz */
-  static constexpr std::chrono::steady_clock::duration TICK_PERIOD =
-      std::chrono::nanoseconds{16666667};
+  static constexpr std::chrono::steady_clock::duration CPU_TICK_PERIOD =
+      std::chrono::nanoseconds{2000000};
 
   bool _carry = false;
 

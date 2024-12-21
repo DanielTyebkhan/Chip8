@@ -158,7 +158,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
     case Opcodes::F_OPS:
       switch (static_cast<FOps>(instruction & 0x00FF)) {
       case FOps::LOAD_DELAY_VX:
-        *VX = _delayTimer;
+        *VX = _delayTimer._delay;
         return true;
       case FOps::WAIT_KEY_VX: {
         auto keyPress = _keyboard->GetNextKeyPress();
@@ -167,7 +167,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         return true;
       }
       case FOps::SET_DELAY_VX:
-        _delayTimer = *VX;
+        _delayTimer._delay = *VX;
         return true;
       case FOps::SET_SOUND_VX:
         _soundTimer.SetTimer(*VX);
@@ -311,15 +311,31 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
   assert(false);
 }
 
+std::chrono::steady_clock::time_point lastRender =
+    std::chrono::steady_clock::now();
+
 void Chip8::Run() {
   _programCounter = MEMORY_OFFSET_PROGRAM;
   while (!_cancelled) {
     const auto now = std::chrono::steady_clock::now();
-    if (now - _lastExecution >= TICK_PERIOD) {
+    _soundTimer.Tick();
+    _delayTimer.Tick();
+    if (now - _lastExecution >= CPU_TICK_PERIOD) {
       _lastExecution = now;
-      _soundTimer.Tick();
-      --_delayTimer;
-      auto shouldIncrementPc = ExecuteInstruction(FetchInstruction());
+
+      // TODO: make a map of instructions to time to execute and print it to
+      // debug
+      const auto nextInstruction = FetchInstruction();
+      // std::cout << std::hex << nextInstruction << std::endl;
+      // const auto before = std::chrono::steady_clock::now();
+      auto shouldIncrementPc = ExecuteInstruction(nextInstruction);
+      // const auto after = std::chrono::steady_clock::now();
+      // const auto diff = (after - before).count() / 1000000000.0;
+      // std::cout << diff << std::endl;
+      // if (diff > 0.4) {
+      //   std::cout << "long" << std::endl;
+      // }
+      lastRender = std::chrono::steady_clock::now();
       if (shouldIncrementPc) {
         IncrementPC();
       }
