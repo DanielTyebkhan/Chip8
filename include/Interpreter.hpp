@@ -107,7 +107,7 @@ private:
    * @brief execute an opcode
    * @return true if the program counter should be incremented
    */
-  bool ExecuteInstruction(Instruction instruction);
+  void ExecuteInstruction(Instruction instruction);
 
   void StackPush(unsigned short val);
 

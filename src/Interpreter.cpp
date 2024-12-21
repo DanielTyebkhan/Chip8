@@ -98,7 +98,7 @@ unsigned short Chip8::StackPop() {
 void Chip8::IncrementPC() { _programCounter += 2; }
 
 // NOLINTNEXTLINE(*cognitive-complexity)
-bool Chip8::ExecuteInstruction(Instruction instruction) {
+void Chip8::ExecuteInstruction(Instruction instruction) {
   // NOLINTBEGIN(*magic-numbers, *-array-index)
   const auto Y = ExtractY(instruction);
   const auto X = ExtractX(instruction);
@@ -120,16 +120,16 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
     case Opcodes::ADD_VX_VY: {
       setCarry(*VX > 0xFF - *VY);
       *VX += *VY;
-      return true;
+      break;
     }
 
     case Opcodes::RETURN:
       _programCounter = StackPop();
-      return true;
+      break;
 
     case Opcodes::CLEAR_SCREEN:
       _screen->Clear();
-      return true;
+      break;
 
     default:
       throw InstructionError(instruction);
@@ -141,7 +141,7 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
 
     case Opcodes::LOAD_VX_KK:
       *VX = KK;
-      return true;
+      break;
 
     case Opcodes::E_OPS:
       switch (static_cast<EOps>(lastNibble)) {
@@ -149,38 +149,40 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         if (_keyboard->IsKeyPressed(*VX)) {
           IncrementPC();
         }
-        return true;
+        break;
       case EOps::SKIP_VX_NOT_PRESSED:
         if (!_keyboard->IsKeyPressed(*VX)) {
           IncrementPC();
         }
-        return true;
+        break;
+      default:
+        throw InstructionError(instruction);
       }
-      throw InstructionError(instruction);
+      break;
 
     case Opcodes::F_OPS:
       switch (static_cast<FOps>(instruction & 0x00FF)) {
       case FOps::LOAD_DELAY_VX:
         *VX = _delayTimer._delay;
-        return true;
+        break;
       case FOps::WAIT_KEY_VX: {
         auto keyPress = _keyboard->GetNextKeyPress();
         keyPress.wait();
         *VX = static_cast<Byte>(keyPress.get());
-        return true;
+        break;
       }
       case FOps::SET_DELAY_VX:
         _delayTimer._delay = *VX;
-        return true;
+        break;
       case FOps::SET_SOUND_VX:
         _soundTimer.SetTimer(*VX);
-        return true;
+        break;
       case FOps::ADD_VX_TO_I:
         _index += *VX;
-        return true;
+        break;
       case FOps::SET_I_VX_SPRITE:
         _index = MEMORY_OFFSET_FONT + *VX;
-        return true;
+        break;
       case FOps::SET_MEM_I_DECIMAL_VX: {
         const auto tc = *VX;
         const Byte hundreds = tc / 100;
@@ -189,125 +191,129 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
         _memory[_index] = hundreds;
         _memory[_index + 1] = tens;
         _memory[_index + 2] = ones;
-        return true;
+        break;
       }
       case FOps::STORE_MEM_I_V0_TO_VX: {
         std::copy(_registers.begin(), _registers.begin() + X + 1,
                   _memory.begin() + _index);
-        return true;
+        break;
       }
       case FOps::LOAD_V0_TO_VX_FROM_MEM_AT_I: {
         std::copy(_memory.begin() + _index, _memory.begin() + _index + X + 1,
                   _registers.begin());
-        return true;
+        break;
       }
+      default:
+        throw InstructionError(instruction);
       }
-      throw InstructionError(instruction);
+      break;
 
     case Opcodes::EIGHT_OPS:
       switch (static_cast<EightOps>(lastNibble)) {
       case EightOps::LOAD_VX_VY:
         *VX = *VY;
-        return true;
+        break;
       case EightOps::OR_VX_VY:
         *VX |= *VY;
-        return true;
+        break;
       case EightOps::AND_VX_VY:
         *VX &= *VY;
-        return true;
+        break;
       case EightOps::XOR_VX_VY:
         *VX ^= *VY;
-        return true;
+        break;
       case EightOps::ADD_VX_VY: {
         const auto sum = *VX + *VY;
         *VX = sum & 0xFF;
         setCarry(sum > 0xFF);
-        return true;
+        break;
       }
       case EightOps::SUB_VX_VY: {
         const Byte x = *VX;
         const Byte y = *VY;
         *VX = (x - y) & 0xFF;
         setCarry(y <= x);
-        return true;
+        break;
       }
       case EightOps::SHIFT_RIGHT_VX: {
         const auto x = *VX;
         *VX >>= 1;
         setCarry(((x & 1) != 0));
-        return true;
+        break;
       }
       case EightOps::SUBN_VX_VY: {
         const unsigned int x = *VX;
         const unsigned int y = *VY;
         *VX = static_cast<Byte>(y - x) & 0xFF;
         setCarry(y >= x);
-        return true;
+        break;
       }
       case EightOps::SHIFT_LEFT_VX: {
         const auto x = *VX;
         *VX = (x << 1) & 0xFF;
         setCarry((x & 0b10000000) != 0);
-        return true;
+        break;
       }
+      default:
+        throw InstructionError(instruction);
       }
-      throw InstructionError(instruction);
+      break;
 
     case Opcodes::ADD_VX_KK:
       *VX = (*VX + KK) & 0xFF;
-      return true;
+      break;
 
     case Opcodes::JUMP_NNN:
       _programCounter = NNN;
-      return false;
+      break;
 
     case Opcodes::JUMP_V0_NNN:
       _programCounter = NNN + *Register(0);
-      return false;
+      break;
 
     case Opcodes::CALL_NNN:
       StackPush(_programCounter);
       _programCounter = NNN;
-      return false;
+      break;
 
     case Opcodes::SET_INDEX_NNN:
       _index = NNN;
-      return true;
+      break;
 
     case Opcodes::SKIP_VX_EQ_KK:
       if (*VX == KK) {
         IncrementPC();
       }
-      return true;
+      break;
 
     case Opcodes::SKIP_VX_NEQ_KK:
       if (*VX != KK) {
         IncrementPC();
       }
-      return true;
+      break;
 
     case Opcodes::SKIP_VX_EQ_VY:
       if (*VX == *VY) {
         IncrementPC();
       }
-      return true;
+      break;
 
     case Opcodes::SKIP_VX_NEQ_VY:
       if (*VX != *VY) {
         IncrementPC();
       }
-      return true;
+      break;
 
     case Opcodes::RND_VX_KK:
       *VX = _rng.Generate() & NNN;
-      return true;
+      break;
 
     case Opcodes::DRAW: {
       auto *const spriteStart = _memory.begin() + _index;
       // NOLINTNEXTLINE(*pointer-arithmetic)
       auto *const spriteEnd = spriteStart + N;
       _screen->Draw(*VX, *VY, std::span(spriteStart, spriteEnd));
-      return true;
+      break;
     }
 
     default:
@@ -315,7 +321,6 @@ bool Chip8::ExecuteInstruction(Instruction instruction) {
     }
   }
   // NOLINTEND(*magic-numbers, *-array-index)
-  assert(false);
 }
 
 void Chip8::Run() {
@@ -327,21 +332,9 @@ void Chip8::Run() {
     if (now - _lastExecution >= CPU_TICK_PERIOD) {
       _lastExecution = now;
 
-      // TODO: make a map of instructions to time to execute and print it to
-      // debug
       const auto nextInstruction = FetchInstruction();
-      // std::cout << std::hex << nextInstruction << std::endl;
-      // const auto before = std::chrono::steady_clock::now();
-      auto shouldIncrementPc = ExecuteInstruction(nextInstruction);
-      // const auto after = std::chrono::steady_clock::now();
-      // const auto diff = (after - before).count() / 1000000000.0;
-      // std::cout << diff << std::endl;
-      // if (diff > 0.4) {
-      //   std::cout << "long" << std::endl;
-      // }
-      if (shouldIncrementPc) {
-        IncrementPC();
-      }
+      IncrementPC();
+      ExecuteInstruction(nextInstruction);
     }
   }
 }
