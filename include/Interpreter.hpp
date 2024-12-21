@@ -138,7 +138,7 @@ private:
   // by popular convention, but can be anywhere 0x0000 - 0x01FF
   static constexpr std::size_t MEMORY_OFFSET_FONT = 0x0050;
 
-  /** 60hz */
+  /** 500hz */
   static constexpr std::chrono::steady_clock::duration CPU_TICK_PERIOD =
       std::chrono::nanoseconds{2000000};
 
