@@ -19,8 +19,6 @@ void Keyboard::SetKeyPressed(std::size_t key, bool isPressed) {
     }
     _keyPressRequests.clear();
   }
-  std::cout << "Key " << std::hex << key << " set to " << isPressed
-            << std::endl;
   _keyboard[key] = isPressed;
 }
 // NOLINTEND(*-array-index)
