@@ -18,12 +18,11 @@ target_sources(
         src/Emulator.cpp 
         src/InstructionError.cpp 
         src/Screen.cpp
-        src/SoundTimer.cpp
         src/Random.cpp
         src/Keyboard.cpp
         src/Interpreter.cpp
         src/UI.cpp
-        src/DelayTimer.cpp
+        src/Timer.cpp
 )
 
 find_package(SDL2 REQUIRED)

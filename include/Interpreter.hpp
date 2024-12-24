@@ -12,7 +12,6 @@
 #include <cstddef>
 #include <filesystem>
 #include <stack>
-#include <stdexcept>
 
 class Chip8 {
   using Instruction = int;

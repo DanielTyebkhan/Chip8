@@ -6,7 +6,6 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_surface.h>
-#include <span>
 #include <stdexcept>
 
 struct SdlError : std::runtime_error {
