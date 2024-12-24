@@ -211,12 +211,15 @@ void Chip8::ExecuteInstruction(Instruction instruction) {
         *VX = *VY;
         break;
       case EightOps::OR_VX_VY:
+        *carry = 0;
         *VX |= *VY;
         break;
       case EightOps::AND_VX_VY:
+        *carry = 0;
         *VX &= *VY;
         break;
       case EightOps::XOR_VX_VY:
+        *carry = 0;
         *VX ^= *VY;
         break;
       case EightOps::ADD_VX_VY: {
