@@ -306,10 +306,7 @@ void Chip8::ExecuteInstruction(Instruction instruction) {
       break;
 
     case Opcodes::DRAW: {
-      auto *const spriteStart = _memory.begin() + _index;
-      // NOLINTNEXTLINE(*pointer-arithmetic)
-      auto *const spriteEnd = spriteStart + N;
-      _screen->Draw(*VX, *VY, std::span(spriteStart, spriteEnd));
+      _screen->Draw(*VX, *VY, std::span(_memory).subspan(_index, N));
       break;
     }
     default:

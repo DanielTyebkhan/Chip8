@@ -41,7 +41,7 @@ bool Screen::Draw(Byte x, Byte y, const std::span<Byte> sprite) {
       if (xCoord >= WIDTH) {
         break;
       }
-      auto &pixel = PixelAt(xCoord, y + yOffset);
+      auto &pixel = PixelAt(xCoord, yCoord);
       const auto spriteBitSet = static_cast<bool>((MSB >> bitNum) & spriteRow);
       const auto oldPixel = pixel;
       pixel ^= static_cast<int>(spriteBitSet);
