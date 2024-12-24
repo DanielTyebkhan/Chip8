@@ -1,8 +1,6 @@
 #include "Keyboard.hpp"
 #include <cassert>
 #include <cstdio>
-#include <ios>
-#include <iostream>
 #include <unistd.h>
 
 // NOLINTBEGIN(*-array-index)
