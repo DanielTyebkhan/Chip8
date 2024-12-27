@@ -23,6 +23,7 @@ target_sources(
         src/Interpreter.cpp
         src/UI.cpp
         src/Timer.cpp
+        src/AudioManager.cpp
 )
 
 find_package(SDL2 REQUIRED)
