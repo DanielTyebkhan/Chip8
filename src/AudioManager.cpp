@@ -1,5 +1,6 @@
 #include "AudioManager.hpp"
 #include "SdlError.hpp"
+#include <SDL2/SDL_audio.h>
 #include <cmath>
 #include <cstdint>
 #include <span>
@@ -41,3 +42,9 @@ AudioManager::AudioManager() {
     throw SdlError();
   }
 }
+
+// NOLINTNEXTLINE(readability*const)
+void AudioManager::StartPlayback() { SDL_PauseAudioDevice(_audioDevice, 0); }
+
+// NOLINTNEXTLINE(readability*const)
+void AudioManager::StopPlayback() { SDL_PauseAudioDevice(_audioDevice, 1); }

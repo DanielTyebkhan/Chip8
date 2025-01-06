@@ -1,11 +1,10 @@
 #pragma once
 
 #include "Constants.hpp"
-#include "DelayTimer.hpp"
 #include "Keyboard.hpp"
 #include "Random.hpp"
 #include "Screen.hpp"
-#include "SoundTimer.hpp"
+#include "Timer.hpp"
 #include "Types.hpp"
 #include <array>
 #include <chrono>
@@ -128,9 +127,11 @@ private:
 
   std::size_t _index = 0;
 
-  DelayTimer _delayTimer;
+  TimerManager _timerManager;
 
-  SoundTimer _soundTimer{};
+  std::shared_ptr<Timer> _delayTimer;
+
+  std::shared_ptr<Timer> _soundTimer;
 
   std::chrono::steady_clock::time_point _lastExecution;
 

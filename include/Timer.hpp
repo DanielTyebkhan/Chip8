@@ -9,9 +9,11 @@ public:
   using Callback = std::function<void(int remainingTicks)>;
 
   using Clock = std::chrono::steady_clock;
+  using TimePoint = Clock::time_point;
+  using Duration = Clock::duration;
 
-  explicit Timer(Clock::duration period,
-                 Clock::duration initialDuration = Clock::duration::zero());
+  Timer(Duration period, bool shouldRepeat, TimePoint (*timeGetter)(),
+        Duration initialDuration = Clock::duration::zero());
 
   void Tick(Clock::time_point current);
 
@@ -24,9 +26,11 @@ public:
   Clock::duration GetPeriod();
 
 private:
-  Clock::duration _duration;
-  Clock::duration _period;
+  Duration _duration;
+  Duration _period;
+  TimePoint _startTime;
   std::vector<Callback> _callbacks;
+  bool _shouldRepeat;
 };
 
 /**

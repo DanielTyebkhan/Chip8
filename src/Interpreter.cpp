@@ -320,8 +320,7 @@ void Chip8::Run() {
   _programCounter = MEMORY_OFFSET_PROGRAM;
   while (!_cancelled) {
     const auto now = std::chrono::steady_clock::now();
-    _soundTimer.Tick();
-    _delayTimer.Tick();
+    _timerManager.Tick();
     if (now - _lastExecution >= CPU_TICK_PERIOD) {
       _lastExecution = now;
 
