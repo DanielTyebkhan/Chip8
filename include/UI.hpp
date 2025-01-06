@@ -1,16 +1,13 @@
 #pragma once
+#include "AudioManager.hpp"
 #include "Keyboard.hpp"
 #include "SafeQueue.hpp"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_surface.h>
-#include <stdexcept>
-
-struct SdlError : std::runtime_error {
-  SdlError();
-};
 
 class SdlManager {
   using Frame = std::vector<bool>;
@@ -41,6 +38,7 @@ private:
   SDL_Surface *_surface = nullptr;
   SDL_Renderer *_renderer = nullptr;
   SDL_Texture *_texture = nullptr;
+  std::unique_ptr<AudioManager> _audio = nullptr;
   std::size_t _screenWidth;
   std::size_t _screenHeight;
   unsigned int _width;

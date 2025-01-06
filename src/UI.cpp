@@ -1,17 +1,14 @@
 #include "UI.hpp"
+#include "SdlError.hpp"
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <algorithm>
-#include <chrono>
 #include <cstddef>
-#include <iostream>
-#include <stdexcept>
-
-SdlError::SdlError()
-    : std::runtime_error("SdlError: " + std::string(SDL_GetError())) {}
+#include <memory>
 
 SdlManager::SdlManager(int widthPixels, int heightPixels, Keyboard *keyboard)
     : _screenWidth(static_cast<std::size_t>(widthPixels * PIXEL_RATIO)),
@@ -19,7 +16,7 @@ SdlManager::SdlManager(int widthPixels, int heightPixels, Keyboard *keyboard)
       _width(widthPixels), _height(heightPixels), _keyboard(keyboard) {
   _pixels.reserve(widthPixels * heightPixels);
   (void)_keyboard;
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
     throw SdlError();
   }
   _window =
@@ -35,6 +32,7 @@ SdlManager::SdlManager(int widthPixels, int heightPixels, Keyboard *keyboard)
   _texture =
       SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGB888,
                         SDL_TEXTUREACCESS_STREAMING, widthPixels, heightPixels);
+  _audio = std::make_unique<AudioManager>();
 }
 
 void SdlManager::TryRenderFrame() {

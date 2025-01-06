@@ -2,10 +2,21 @@
 #include <chrono>
 #include <stdexcept>
 
-Timer::Timer(Clock::duration period) : _period(period) {
+Timer::Timer(Clock::duration period, Clock::duration initialDuration)
+    : _duration(initialDuration), _period(period) {
   if (_period.count() <= 0) {
     throw std::invalid_argument("period may not be <= 0");
   }
 }
 
-bool Timer::IsActive() const noexcept { return _duration.count() > 0; }
+void Timer::RegisterCallback(Callback callback) noexcept {
+  _callbacks.push_back(std::move(callback));
+}
+
+void Timer::Tick() {
+  if (_duration == Clock::duration::zero()) {
+    for (auto &callback : _callbacks) {
+      callback()
+    }
+  }
+}
