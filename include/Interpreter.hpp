@@ -91,6 +91,8 @@ public:
 private:
   Instruction FetchInstruction();
 
+  void RunNextInstruction();
+
   static constexpr int ExtractX(Instruction instruction);
   static constexpr int ExtractY(Instruction instruction);
   static constexpr int ExtractN(Instruction instruction);
@@ -132,8 +134,6 @@ private:
   std::shared_ptr<Timer> _delayTimer;
 
   std::shared_ptr<Timer> _soundTimer;
-
-  std::chrono::steady_clock::time_point _lastExecution;
 
   // by popular convention, but can be anywhere 0x0000 - 0x01FF
   static constexpr std::size_t MEMORY_OFFSET_FONT = 0x0050;

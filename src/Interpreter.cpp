@@ -13,7 +13,15 @@
 #include <stdexcept>
 
 Chip8::Chip8(Keyboard *keyboard, Screen *screen)
-    : _keyboard(keyboard), _screen(screen) {}
+    : _keyboard(keyboard), _screen(screen) {
+  constexpr static Timer::Duration TIMER_DELAYS{16666667};
+  _soundTimer = _timerManager.AddTimer(TIMER_DELAYS, false).lock();
+  _delayTimer = _timerManager.AddTimer(TIMER_DELAYS, false).lock();
+  constexpr static Timer::Duration CLOCK_SPEED{2000000};
+  auto clockTimer = _timerManager.AddTimer(CLOCK_SPEED, true);
+  clockTimer.lock()->RegisterCallback(
+      [this](auto &&) { RunNextInstruction(); });
+}
 
 void Chip8::InitializeMemory() {
   _memory = {};
@@ -23,9 +31,8 @@ void Chip8::InitializeMemory() {
 }
 
 void Chip8::Reset() {
-  _soundTimer = {};
-  _lastExecution =
-      std::chrono::steady_clock::time_point{std::chrono::seconds{0}};
+  _soundTimer->SetTicks(0);
+  _delayTimer->SetTicks(0);
   InitializeMemory();
   _screen->Clear();
   _stack = {};
@@ -160,7 +167,7 @@ void Chip8::ExecuteInstruction(Instruction instruction) {
     case Opcodes::F_OPS:
       switch (static_cast<FOps>(instruction & 0x00FF)) {
       case FOps::LOAD_DELAY_VX:
-        *VX = _delayTimer._delay;
+        *VX = static_cast<Byte>(_delayTimer->GetTicks());
         break;
       case FOps::WAIT_KEY_VX: {
         auto keyPress = _keyboard->GetNextKeyPress();
@@ -169,10 +176,10 @@ void Chip8::ExecuteInstruction(Instruction instruction) {
         break;
       }
       case FOps::SET_DELAY_VX:
-        _delayTimer._delay = *VX;
+        _delayTimer->SetTicks(*VX);
         break;
       case FOps::SET_SOUND_VX:
-        _soundTimer.SetTimer(*VX);
+        _soundTimer->SetTicks(*VX);
         break;
       case FOps::ADD_VX_TO_I:
         _index += *VX;
@@ -316,18 +323,16 @@ void Chip8::ExecuteInstruction(Instruction instruction) {
   // NOLINTEND(*magic-numbers, *-array-index)
 }
 
+void Chip8::RunNextInstruction() {
+  const auto nextInstruction = FetchInstruction();
+  IncrementPC();
+  ExecuteInstruction(nextInstruction);
+}
+
 void Chip8::Run() {
   _programCounter = MEMORY_OFFSET_PROGRAM;
   while (!_cancelled) {
-    const auto now = std::chrono::steady_clock::now();
     _timerManager.Tick();
-    if (now - _lastExecution >= CPU_TICK_PERIOD) {
-      _lastExecution = now;
-
-      const auto nextInstruction = FetchInstruction();
-      IncrementPC();
-      ExecuteInstruction(nextInstruction);
-    }
   }
 }
 
