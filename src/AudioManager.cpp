@@ -41,10 +41,11 @@ AudioManager::AudioManager() {
   if (audio_device == 0) {
     throw SdlError();
   }
+  PausePlayback();
 }
 
 // NOLINTNEXTLINE(readability*const)
-void AudioManager::StartPlayback() { SDL_PauseAudioDevice(_audioDevice, 0); }
+void AudioManager::UnpausePlayback() { SDL_PauseAudioDevice(_audioDevice, 0); }
 
 // NOLINTNEXTLINE(readability*const)
-void AudioManager::StopPlayback() { SDL_PauseAudioDevice(_audioDevice, 1); }
+void AudioManager::PausePlayback() { SDL_PauseAudioDevice(_audioDevice, 1); }

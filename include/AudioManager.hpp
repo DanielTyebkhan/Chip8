@@ -8,8 +8,8 @@ public:
 
   AudioManager();
 
-  void StartPlayback();
-  void StopPlayback();
+  void UnpausePlayback();
+  void PausePlayback();
 
   ~AudioManager();
 
@@ -21,5 +21,6 @@ private:
   constexpr static double FREQUENCY_HZ = 440;
   constexpr static int SAMPLES = 2048;
   constexpr static int SAMPLE_SIZE = 16;
+
   SDL_AudioDeviceID _audioDevice = 0;
 };
