@@ -3,33 +3,31 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
+
 class Timer {
 public:
-  using Callback = std::function<void(int remainingTicks)>;
+  using Callback = std::function<void(unsigned remainingTicks)>;
 
   using Clock = std::chrono::steady_clock;
   using TimePoint = Clock::time_point;
   using Duration = Clock::duration;
 
-  Timer(Duration period, bool shouldRepeat, TimePoint (*timeGetter)(),
-        Duration initialDuration = Clock::duration::zero());
+  Timer(Duration period, bool shouldRepeat, unsigned int initialTicks);
 
-  void Tick(Clock::time_point current);
+  void Tick(TimePoint current);
 
   void RegisterCallback(Callback callback) noexcept;
-
-  [[nodiscard]] Clock::duration GetDuration() const noexcept;
-
-  void SetDuration(Clock::duration duration) noexcept;
 
   Clock::duration GetPeriod();
 
 private:
-  Duration _duration;
+  void Decrement();
   Duration _period;
-  TimePoint _startTime;
+  std::optional<TimePoint> _lastTick;
   std::vector<Callback> _callbacks;
+  unsigned int _remainingTicks;
   bool _shouldRepeat;
 };
 
@@ -39,7 +37,8 @@ private:
  */
 class TimerManager {
 public:
-  std::weak_ptr<Timer> AddTimer(Timer::Clock period) noexcept;
+  std::weak_ptr<Timer> AddTimer(Timer::Duration period, bool shouldRepeat,
+                                unsigned int initialTicks = 0) noexcept;
 
   void RemoveTimer(std::weak_ptr<Timer> toRemove);
 
