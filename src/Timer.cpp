@@ -46,7 +46,8 @@ void Timer::SetTicks(unsigned int ticks) noexcept { _remainingTicks = ticks; }
 std::weak_ptr<Timer>
 TimerManager::AddTimer(Timer::Duration period, bool shouldRepeat,
                        unsigned int initialTicks) noexcept {
-  _timers.emplace_back(period, shouldRepeat, initialTicks);
+  _timers.emplace_back(
+      std::make_shared<Timer>(period, shouldRepeat, initialTicks));
   return {_timers.back()};
 }
 
