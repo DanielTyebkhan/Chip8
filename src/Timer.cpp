@@ -38,6 +38,8 @@ void Timer::Tick(TimePoint currentTime) {
   _lastTick = currentTime;
 }
 
+void Timer::SetTicks(unsigned int ticks) noexcept { _remainingTicks = ticks; }
+
 std::weak_ptr<Timer>
 TimerManager::AddTimer(Timer::Duration period, bool shouldRepeat,
                        unsigned int initialTicks) noexcept {

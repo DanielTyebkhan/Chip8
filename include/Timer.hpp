@@ -20,7 +20,7 @@ public:
 
   void RegisterCallback(Callback callback) noexcept;
 
-  Clock::duration GetPeriod();
+  void SetTicks(unsigned int ticks) noexcept;
 
 private:
   void Decrement();
