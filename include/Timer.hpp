@@ -22,6 +22,8 @@ public:
 
   void SetTicks(unsigned int ticks) noexcept;
 
+  [[nodiscard]] unsigned int GetTicks() const noexcept;
+
 private:
   void Decrement();
   Duration _period;

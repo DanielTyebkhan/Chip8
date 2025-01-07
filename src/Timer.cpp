@@ -39,6 +39,9 @@ void Timer::Tick(TimePoint currentTime) {
 }
 
 void Timer::SetTicks(unsigned int ticks) noexcept { _remainingTicks = ticks; }
+[[nodiscard]] unsigned int Timer::GetTicks() const noexcept {
+  return _remainingTicks;
+}
 
 std::weak_ptr<Timer>
 TimerManager::AddTimer(Timer::Duration period, bool shouldRepeat,
