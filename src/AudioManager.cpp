@@ -49,3 +49,5 @@ void AudioManager::UnpausePlayback() { SDL_PauseAudioDevice(_audioDevice, 0); }
 
 // NOLINTNEXTLINE(readability*const)
 void AudioManager::PausePlayback() { SDL_PauseAudioDevice(_audioDevice, 1); }
+
+AudioManager::~AudioManager() { SDL_CloseAudioDevice(_audioDevice); }
